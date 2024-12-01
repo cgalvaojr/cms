@@ -2,42 +2,64 @@
 
 namespace App\Services;
 
+use App\Helpers\CommentsHelper;
+use App\Models\Comment;
+use App\Models\Post;
+use Illuminate\Http\Request;
+use App\Helpers\ModelHelper;
+
 class CommentService
 {
-    private const string RANDOM_WORDS = "Cool,Strange,Funny,Laughing,Nice,Awesome,Great,Horrible,Beautiful,PHP,Vegeta,Italy,Joost";
+    use ModelHelper;
+    use CommentsHelper;
 
-    public function generateCombinations(): array
+    public function __construct(private readonly Comment $model)
     {
-        $wordsArray = array_map('strtolower', explode(',', self::RANDOM_WORDS));
-        $combinations = [];
-
-        foreach ($wordsArray as $i => $word) {
-            $this->combine(array_slice($wordsArray, $i), [], $combinations);
-        }
-
-        return $combinations;
     }
 
-    private function combine(array $words, array $current, array &$combinations): void
+    public function getComments(Request $request, Post $post): array
     {
-        if ($current) {
-            $combinations[] = implode(' ', $current);
+        $commentsQueryBuilder = $post->comments()->getQuery();
+
+        if ($request->has('content')) {
+            $commentsQueryBuilder->where('content', 'like', '%' . $request->input('content') . '%');
         }
 
-        foreach ($words as $i => $word) {
-            $this->combine(array_slice($words, $i + 1), array_merge($current, [$word]), $combinations);
-        }
+        $this->applyFilters($request, $commentsQueryBuilder);
+        $count = $commentsQueryBuilder->count();
+
+        $this->applyLimit($request, $commentsQueryBuilder);
+        $this->applyPagination($request, $commentsQueryBuilder);
+
+        return [
+            'result' => $commentsQueryBuilder->get(),
+            'count' => $count
+        ];
     }
 
-    public function generateAbbreviation(string $content): string
+    public function createComment(Request $request, int $postId): void
     {
-        $words = explode(' ', $content);
-        $abbreviation = '';
+        $content = $request->input('content');
+        $abbreviation = $this->generateAbbreviation($content);
 
-        foreach ($words as $word) {
-            $abbreviation .= $word[0];
+        if ($this->model->where('abbreviation', $abbreviation)->exists()) {
+            throw new \RuntimeException('Abbreviation already exists');
         }
 
-        return $abbreviation;
+        $this->model->create([
+            'content' => $content,
+            'post_id' => $postId,
+            'abbreviation' => $abbreviation
+        ]);
+    }
+
+    public function deleteComment(int $comment): void
+    {
+        $comment = $this->model->find($comment);
+
+        if(!$comment) {
+            throw new \RuntimeException('Comment not found');
+        }
+        $comment->delete();
     }
 }

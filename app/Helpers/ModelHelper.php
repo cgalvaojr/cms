@@ -27,17 +27,10 @@ trait ModelHelper
     {
         $queryBuilder->paginate(self::DEFAULT_PAGE_NUMBER);
         $queryBuilder->limit(self::DEFAULT_ROWS_LIMIT);
+        $this->filterDates($request, $queryBuilder);
 
         if($request->has('id')) {
             $queryBuilder->where('id', $request->id);
-        }
-
-        if($request->has('created_at')) {
-            $queryBuilder->whereDate('created_at', $request->created_at);
-        }
-
-        if($request->has('updated_at')) {
-            $queryBuilder->whereDate('updated_at', $request->created_at);
         }
 
         if($request->has('sort')) {
@@ -49,5 +42,26 @@ trait ModelHelper
         }
 
         return $queryBuilder;
+    }
+
+    private function filterDates($request, $queryBuilder)
+    {
+        $dateFilters = ['created_at', 'updated_at'];
+
+        foreach ($dateFilters as $filter) {
+            if ($request->has($filter)) {
+                $date = $request->$filter;
+
+                if (strlen($date) === 4) {
+                    $queryBuilder->whereYear($filter, $date);
+                } elseif (strlen($date) === 7) {
+                    [$year, $month] = explode('-', $date);
+                    $queryBuilder->whereYear($filter, $year)
+                        ->whereMonth($filter, $month);
+                } else {
+                    $queryBuilder->whereDate($filter, $date);
+                }
+            }
+        }
     }
 }

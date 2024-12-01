@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\ResponseHelper;
+use App\Http\Requests\CommentsRequest;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Services\CommentService;
@@ -17,26 +17,27 @@ class CommentsController extends Controller
 
     public function get(Request $request, Post $post): JsonResponse
     {
-        $post->load('comments');
-        $comments =  $post->comments()->get();
-        return response()->json(ResponseHelper::formatResponse($comments));
+        $comments = $this->service->getComments($request, $post);
+        return response()->json($comments);
     }
 
-    public function delete(Post $post, Comment $comment): JsonResponse
+    public function delete(Post $post, int $comment): JsonResponse
     {
-        $comment->delete();
-        return response()->json(['result' => 'Comment deleted']);
+        try {
+            $this->service->deleteComment($comment);
+            return response()->json(true);
+        } catch (\Exception $exception) {
+            return response()->json(['error' => $exception->getMessage()], 400);
+        }
     }
 
-    public function create(Request $request, Post $post): JsonResponse
+    public function create(CommentsRequest $request, Post $post): JsonResponse
     {
-        $comment = new Comment();
-        $content = $request->input('content');
-        $comment->content = $content;
-        $comment->post_id = $post->id;
-        $comment->abbreviation = $this->service->generateAbbreviation($content);
-        $comment->save();
-
-        return response()->json(['result' => 'Create comment in post ' . $post->id]);
+        try {
+            $this->service->createComment($request, $post->id);
+            return response()->json(['result' => 'Created comment in post id ' . $post->id]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class PostsRequest extends FormRequest
+class CommentsRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,14 +16,15 @@ class PostsRequest extends FormRequest
     {
         return [
             'id' => 'integer',
-            'topic' => 'unique:posts,topic',
-            'created_at' => 'string',
-            'updated_at' => 'string',
+            'content' => 'unique:comments,content',
+            'abbreviation' => 'string',
+            'created_at' => 'date',
+            'updated_at' => 'date',
             'sort' => 'in:id,topic,created_at,updated_at',
             'direction' => 'in:asc,desc',
             'limit' => 'integer|min:1',
             'page' => 'integer|min:1',
-            'with' => 'string|in:comments'
+            'with' => 'string|in:post'
         ];
     }
 
