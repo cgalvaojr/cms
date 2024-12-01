@@ -17,7 +17,6 @@ class CommentSeeder extends Seeder
     {
         $postIds = $this->generatePosts()->pluck('id')->toArray();
         $combinations = $this->generateCombinations();
-        $randomPostKey = array_rand($postIds);
 
         $count = 0;
         foreach ($combinations as $combination) {
@@ -25,6 +24,7 @@ class CommentSeeder extends Seeder
                 break;
             }
 
+            $randomPostKey = array_rand($postIds);
             $comments[] = [
                 'content' => $combination,
                 'abbreviation' => $this->generateAbbreviation($combination),
