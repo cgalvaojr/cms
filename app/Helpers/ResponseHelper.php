@@ -2,13 +2,18 @@
 
 namespace App\Helpers;
 
-class ResponseHelper
+trait ResponseHelper
 {
-    public static function formatResponse($data): array
+    public function formatResponse($data): array
     {
         return [
             'count' => count($data),
             'result' => $data
         ];
+    }
+
+    public function errorResponse(\Exception $exception): array
+    {
+        return ['error' => $exception->getMessage()];
     }
 }

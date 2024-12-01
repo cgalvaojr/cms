@@ -3,15 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\PostsRequest;
 use App\Models\Post;
+use App\Services\PostService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PostsController extends Controller
 {
-    public function get(Request $request): JsonResponse
+    use ResponseHelper;
+
+    public function __construct(private readonly PostService $service)
     {
-        return response()->json(ResponseHelper::formatResponse(Post::all()));
+
+    }
+
+    public function get(PostsRequest $request): JsonResponse
+    {
+        try {
+            $posts = $this->service->getPosts($request);
+            return response()->json($posts);
+        } catch (\Exception $exception) {
+            return response()->json($this->errorResponse($exception));
+        }
     }
 
     public function delete(Post $post): JsonResponse
