@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Comment;
 use App\Models\Post;
+use App\Services\CommentService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 
@@ -11,12 +12,11 @@ class CommentSeeder extends Seeder
 {
     private const int MAX_COMMENTS = 8191;
     private const int POSTS_COUNT = 5;
-    private const string RANDOM_WORDS = "Cool,Strange,Funny,Laughing,Nice,Awesome,Great,Horrible,Beautiful,PHP,Vegeta,Italy,Joost";
-
     public function run(): void
     {
+        $service = new CommentService();
         $postIds = $this->generatePosts()->pluck('id')->toArray();
-        $combinations = $this->generateCombinations();
+        $combinations = $service->generateCombinations();
 
         $count = 0;
         foreach ($combinations as $combination) {
@@ -27,8 +27,9 @@ class CommentSeeder extends Seeder
             $randomPostKey = array_rand($postIds);
             $comments[] = [
                 'content' => $combination,
-                'abbreviation' => $this->generateAbbreviation($combination),
-                'post_id' => $postIds[$randomPostKey]
+                'abbreviation' => $service->generateAbbreviation($combination),
+                'post_id' => $postIds[$randomPostKey],
+                'created_at' => now()
             ];
 
             $count++;
@@ -40,40 +41,5 @@ class CommentSeeder extends Seeder
     private function generatePosts(): Collection
     {
         return Post::factory()->count(self::POSTS_COUNT)->create();
-    }
-
-    private function generateCombinations(): array
-    {
-        $wordsArray = array_map('strtolower', explode(',', self::RANDOM_WORDS));
-        $combinations = [];
-
-        foreach ($wordsArray as $i => $word) {
-            $this->combine(array_slice($wordsArray, $i), [], $combinations);
-        }
-
-        return $combinations;
-    }
-
-    private function combine(array $words, array $current, array &$combinations): void
-    {
-        if ($current) {
-            $combinations[] = implode(' ', $current);
-        }
-
-        foreach ($words as $i => $word) {
-            $this->combine(array_slice($words, $i + 1), array_merge($current, [$word]), $combinations);
-        }
-    }
-
-    private function generateAbbreviation(string $content): string
-    {
-        $words = explode(' ', $content);
-        $abbreviation = '';
-
-        foreach ($words as $word) {
-            $abbreviation .= $word[0];
-        }
-
-        return $abbreviation;
     }
 }

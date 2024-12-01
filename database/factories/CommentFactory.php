@@ -13,8 +13,8 @@ class CommentFactory extends Factory
             'content' => $this->faker->sentence,
             'abbreviation' => $this->faker->word,
             'post_id' => Post::factory(),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => $this->faker->date(),
+            'updated_at' => $this->faker->date(),
         ];
     }
 }
