@@ -5,11 +5,6 @@ services:
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        command: >
-            sh -c "
-            php artisan migrate --seed &&
-            php-fpm
-            "
         image: 'sail-8.4/app'
         extra_hosts:
             - 'host.docker.internal:host-gateway'
