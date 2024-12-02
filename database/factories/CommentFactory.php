@@ -4,17 +4,19 @@ namespace Database\Factories;
 
 use App\Models\Post;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
+use App\Helpers\CommentsHelper;
 class CommentFactory extends Factory
 {
+    use CommentsHelper;
     public function definition(): array
     {
+        $sentence = $this->faker->sentence;
         return [
-            'content' => $this->faker->sentence,
-            'abbreviation' => $this->faker->word,
+            'content' => strtolower($sentence),
+            'abbreviation' => $this->generateAbbreviation($sentence),
             'post_id' => Post::factory(),
-            'created_at' => $this->faker->date(),
-            'updated_at' => $this->faker->date(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

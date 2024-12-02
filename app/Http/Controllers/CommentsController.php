@@ -25,7 +25,7 @@ class CommentsController extends Controller
     {
         try {
             $this->service->deleteComment($comment);
-            return response()->json(true);
+            return response()->json([true]);
         } catch (\Exception $exception) {
             return response()->json(['error' => $exception->getMessage()], 400);
         }

@@ -14,7 +14,6 @@ class PostsController extends Controller
 
     public function __construct(private readonly PostService $service)
     {
-
     }
 
     public function get(PostsRequest $request): JsonResponse
