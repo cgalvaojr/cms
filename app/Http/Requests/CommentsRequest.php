@@ -16,7 +16,7 @@ class CommentsRequest extends FormRequest
     {
         return [
             'id' => 'integer',
-            'content' => 'unique:comments,content',
+            'content' => 'required|unique:comments,content',
             'abbreviation' => 'string',
             'created_at' => 'date',
             'updated_at' => 'date',

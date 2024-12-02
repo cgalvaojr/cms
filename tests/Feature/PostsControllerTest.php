@@ -10,7 +10,7 @@ class PostsControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_get_posts()
+    public function test_get_posts(): void
     {
         Post::factory()->count(3)->create();
 
@@ -20,7 +20,7 @@ class PostsControllerTest extends TestCase
             ->assertJsonCount(2);
     }
 
-    public function test_delete_post()
+    public function test_delete_post(): void
     {
         $post = Post::factory()->create();
         $response = $this->deleteJson(route('posts.delete', ['post' => $post->id]));
@@ -29,5 +29,14 @@ class PostsControllerTest extends TestCase
             ->assertJson(['result' => 'Post deleted']);
 
         $this->assertDatabaseMissing('posts', ['id' => $post->id]);
+    }
+
+    public function test_delete_non_existent_post(): void
+    {
+        $nonExistentPostId = 999; // Assuming this ID does not exist
+
+        $response = $this->deleteJson(route('posts.delete', ['post' => $nonExistentPostId]));
+
+        $response->assertStatus(404);
     }
 }
